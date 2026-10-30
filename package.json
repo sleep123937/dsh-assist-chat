@@ -1,6 +1,6 @@
 {
   "name": "dsh-assist-chat",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "Side chat for DeepSeek Harness: a right-dock seat that branches the current conversation, so you can ask follow-ups without derailing the main thread. 右侧栏辅助对话：从当前会话 fork 一条旁支，追问不打断主线。",
   "type": "module",
   "license": "MIT",
