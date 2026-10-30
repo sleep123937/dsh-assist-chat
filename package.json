@@ -34,7 +34,8 @@
     "README.md",
     "README.zh.md",
     "LICENSE",
-    "test/*.cjs"
+    "test/*.cjs",
+    "CHANGELOG.md"
   ],
   "dsh": {
     "manifestVersion": 1,
