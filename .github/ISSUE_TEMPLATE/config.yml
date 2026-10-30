@@ -1,0 +1,5 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Email the maintainer
+    url: mailto:zousleep@163.com
+    about: Prefer not to use GitHub? Write to the maintainer directly.

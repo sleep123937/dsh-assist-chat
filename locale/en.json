@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "title": "Side chat",
+    "description": "Branch the current conversation into the right dock. Ask a follow-up without derailing the main thread — the branch already knows everything the main conversation knows."
+  },
+  "tab.title": "Side chat",
+  "guide.title": "Side chat",
+  "guide.description": "Open a side conversation isolated from the main thread",
+  "action.open": "Side chat",
+  "action.openTitle": "Open side chat",
+  "action.new": "New side chat",
+  "action.newTitle": "Start a fresh side conversation",
+  "header.button": "Side chat",
+  "header.buttonTitle": "Open side chat in the right sidebar",
+  "status.creating": "Preparing side chat…",
+  "status.error": "Could not open side chat",
+  "retry": "Retry",
+  "empty.hint": "Ask anything — the main thread stays untouched."
+}

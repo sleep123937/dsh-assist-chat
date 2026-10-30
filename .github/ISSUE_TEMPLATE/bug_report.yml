@@ -1,0 +1,67 @@
+name: Bug report
+description: Something is broken or behaves unexpectedly
+title: "[Bug] "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report this. Please do not paste secrets, tokens or private code.
+
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened
+      description: What went wrong, in as much detail as you can.
+    validations:
+      required: true
+
+  - type: textarea
+    id: expected
+    attributes:
+      label: What you expected
+    validations:
+      required: true
+
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Open a conversation with some history
+        2. Click "Side chat"
+        3. ...
+    validations:
+      required: false
+
+  - type: input
+    id: dsh-version
+    attributes:
+      label: DeepSeek Harness version
+      placeholder: e.g. 0.2.1-rc.3
+    validations:
+      required: true
+
+  - type: input
+    id: plugin-version
+    attributes:
+      label: dsh-assist-chat version
+      placeholder: e.g. 0.1.0
+    validations:
+      required: false
+
+  - type: input
+    id: client
+    attributes:
+      label: Which client are you on
+      placeholder: desktop / web
+    validations:
+      required: false
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Console errors or screenshots
+      description: Open DevTools (Ctrl+Shift+I) and paste anything red from the Console tab.
+    validations:
+      required: false

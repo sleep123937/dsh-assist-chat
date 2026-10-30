@@ -1,0 +1,9 @@
+node_modules/
+*.log
+.DS_Store
+Thumbs.db
+restart-log.txt
+.readme.b64
+.restart.b64
+restart-dsh.ps1
+*.local.*

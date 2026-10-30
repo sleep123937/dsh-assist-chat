@@ -1,0 +1,19 @@
+{
+  "meta": {
+    "title": "辅助对话",
+    "description": "在右侧栏开一条当前对话的分支。追问不会打断主线——分支已经知道主对话知道的一切。"
+  },
+  "tab.title": "辅助对话",
+  "guide.title": "辅助对话",
+  "guide.description": "开一个与主对话隔离的旁支会话，随时追问而不打断主线",
+  "action.open": "辅助对话",
+  "action.openTitle": "打开辅助对话",
+  "action.new": "新建辅助对话",
+  "action.newTitle": "开一个全新的旁支会话",
+  "header.button": "辅助对话",
+  "header.buttonTitle": "在右侧栏开启辅助对话",
+  "status.creating": "正在准备辅助对话…",
+  "status.error": "无法开启辅助对话",
+  "retry": "重试",
+  "empty.hint": "问点什么吧，这里不会打断主对话。"
+}
