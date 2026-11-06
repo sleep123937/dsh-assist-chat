@@ -15,5 +15,7 @@
   "status.creating": "Preparing side chat…",
   "status.error": "Could not open side chat",
   "retry": "Retry",
+  "shortcut.open": "Open side chat",
+  "shortcut.noSession": "No main conversation is available",
   "empty.hint": "Ask anything — the main thread stays untouched."
 }
