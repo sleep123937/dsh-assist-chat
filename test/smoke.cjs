@@ -95,6 +95,9 @@ const services = {
   sidebarRightTabs: { register(def) { tabTypes.push(def); return () => {}; } },
   sidebarRight: { openTab: (kind) => { services.sidebarRight.opened = kind; }, close: () => {} },
   layout: { openRightbar() {}, closeRightbar() {} },
+  // A real Desktop host exposes the shortcut registry; the old smoke mock did
+  // not, which made the module log a degraded-mode warning to the real console.
+  shortcuts: { register(def) { services.shortcuts.registered = def; return () => {}; } },
 };
 
 const effectDisposers = [];
@@ -181,10 +184,27 @@ try {
 }
 ok('disposal is clean', !disposeError, disposeError);
 
-console.log('');
-if (failures === 0) {
-  console.log('ALL PASS');
-} else {
-  console.log(failures + ' FAILURE(S)');
-  process.exitCode = 1;
-}
+/* ---------- extracted suites ---------- */
+// Keep npm test a single entry point: the extra suites are plain CJS modules
+// required from here (no test runner, no real DSH).
+const suites = ['registration.cjs', 'locale.cjs', 'lifecycle.cjs', 'errors.cjs', 'shortcut.cjs', 'catalog.cjs'];
+
+(async function runSuites() {
+  for (const file of suites) {
+    console.log('');
+    console.log('--- ' + file + ' ---');
+    try {
+      await require('./' + file).run(ok);
+    } catch (e) {
+      ok('suite ' + file + ' runs to completion', false, e && (e.message + '\n' + e.stack));
+    }
+  }
+
+  console.log('');
+  if (failures === 0) {
+    console.log('ALL PASS');
+  } else {
+    console.log(failures + ' FAILURE(S)');
+    process.exitCode = 1;
+  }
+})();
