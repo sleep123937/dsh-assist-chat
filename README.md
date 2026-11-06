@@ -31,6 +31,8 @@ A side chat is the third option done properly. It is the same idea as the side c
 3. Ask your question. It answers using the full context you already built up.
 4. Close the tab. Your main conversation never noticed a thing.
 
+From the keyboard, `Ctrl+Shift+B` (`Cmd+Shift+B` on macOS) does the same thing wherever the focus is, and focuses the tab if it is already open.
+
 The panel is not a reimplementation of chat: it mounts the product own Conversation surface, so streaming, markdown, tool cards, approvals, Stop and the composer behave exactly like the main conversation.
 
 ## Features
@@ -41,6 +43,24 @@ The panel is not a reimplementation of chat: it mounts the product own Conversat
 - **One branch per conversation** — conversation A side chat never appears while you are looking at B.
 - **Tab lifecycle is branch lifecycle** — one branch while the tab is open (survives tab switches and dock collapse), retired when you close the tab.
 - **No clutter** — the branch is hidden from the left session list while alive, and archived once you close it.
+- **Keyboard access** — `Ctrl+Shift+B` (`Cmd+Shift+B` on macOS) opens the side chat for the conversation on screen, or focuses it if it is already open. On Desktop it is a normal command you can rebind in the shortcut settings; on the Web build, where the host already owns that chord, the plugin claims it first.
+
+## Roadmap
+
+Directions, not promises — no release date is attached to any of them.
+
+**0.2.0**
+
+- **Ask about a selection** — highlight text in the main conversation and send it to the side chat as quoted context, instead of copying and pasting it.
+- **Bring the conclusion back** — insert the side chat's conclusion into the main thread as a single quoted message, instead of replaying the whole side conversation.
+- **Several side chats for one conversation** — keep more than one live branch from the same conversation, each in its own tab.
+- **Refresh the snapshot** — re-fork the latest main conversation without closing the tab first.
+
+**0.3.0 and later**
+
+- **Nested side chats** — ask a follow-up from inside a side chat.
+- **Save as a real conversation** — promote a branch into the normal session list when you want to keep it.
+- **Choose model and permissions** — pick which model and permission mode the branch inherits when it forks, instead of always mirroring the main thread.
 
 ## Install
 
@@ -93,7 +113,7 @@ Branch lifecycle: resolve the conversation on screen (`uiWorkspace.mainReference
 
 **Never archive a branch that is still in use.** DSH ships an `archived-session-gate` that rejects every `agent/pre-step` of an archived Session. Messages are accepted into the queue and then silently vanish, with no error at all. Archiving is only safe *after* the tab closes.
 
-**Which forces hiding to be presentation-only.** The catalog renders one row per Session carrying `data-row-key="session:<id>"`, so the plugin marks the rows it minted and hides them with `display: none`. The Session stays fully writable. Trade-offs: the "expand N more" counter still counts hidden rows, and the trick is tied to that row-key convention.
+**Which forces hiding to be presentation-only.** The catalog renders one row per Session carrying `data-row-key="session:<id>"`, so the plugin marks the rows it minted and hides them with `display: none`. The Session stays fully writable, and the plugin corrects the "expand N more" counters: hidden branch rows pushed into the collapsed tail are removed from the count, and an exhausted counter is suppressed instead of promising rows that never appear. Trade-offs: the correction depends on the catalog's row-key convention (`session:<id>` rows, `overflow:<groupKey>` counters), and it works by editing the number inside the localized counter label.
 
 ## Compatibility
 

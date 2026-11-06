@@ -2,6 +2,18 @@
 
 All notable changes to this project are documented here. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and the project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.1.2] — 2026-11-06
+
+### Added
+
+- **Ctrl+Shift+B** (`Cmd+Shift+B` on macOS) — a configurable command that opens the side chat for the conversation on screen, or focuses the existing tab instead of opening a second copy. It ships a Desktop default binding and appears in the shortcut settings; on the Web build it claims the chord before the host's own right-sidebar shortcut.
+- A marketplace icon: `assets/icon-180.png` (with `assets/icon-512.png` as the high-resolution source), referenced from `package.json.icon` and used as the storefront tile in awesome-dsh-plugin. `icon.svg` remains the vector source.
+- A **Roadmap** section in both READMEs: the 0.2.0 directions (ask about a selection, bring the conclusion back to the main thread, several side chats per conversation, refresh the snapshot) and the 0.3.0+ directions (nested side chats, save a branch as a real conversation, choose model and permission inheritance). No dates are promised. The READMEs also document the new shortcut.
+
+### Fixed
+
+- The left session list's "expand N more" counter no longer includes hidden side-chat branches that fell into the collapsed tail, so the number matches what the list can actually reveal; an exhausted counter is suppressed instead of promising rows that never appear.
+
 ## [0.1.1] — 2026-10-30
 
 ### Added
