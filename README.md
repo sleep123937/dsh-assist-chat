@@ -89,7 +89,7 @@ No. A fork is a snapshot: the branch knows the conversation up to the moment you
 No. Separate Session, separate transcript. The main thread is byte-for-byte unchanged.
 
 **Can I keep several open?**
-Yes — the dock supports tabs and split panes. Each branch is tied to the conversation it was forked from.
+Yes — the dock supports tabs and split panes. Each branch is tied to the conversation it was forked from, and `Ctrl+Shift+B` opens or focuses the side chat of the conversation on screen. The single instance is scoped per conversation: sessions A and B each keep their own side-chat tab, while pressing the shortcut again in the same conversation only focuses the tab that is already open.
 
 **Why did my message disappear once?**
 If a branch gets archived while its tab is still open, DSH rejects its model steps silently. This plugin only archives on tab close, and attempts to restore a branch that is somehow still archived. If you ever see it, reopen the tab.

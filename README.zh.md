@@ -70,7 +70,7 @@ dsh plugin --profile desktop add link:/本地绝对路径/dsh-assist-chat
 3. 右栏出现该对话的分支，直接提问；
 4. 用完关掉标签；下次再打开会重新 fork 当时最新的主对话。
 
-不想点按钮也行：`Ctrl+Shift+B`（macOS 为 `Cmd+Shift+B`）随时打开/聚焦辅助对话，焦点在哪都生效。
+不想点按钮也行：`Ctrl+Shift+B`（macOS 为 `Cmd+Shift+B`）随时打开/聚焦辅助对话，焦点在哪都生效。单实例是按主会话算的——不同主会话各有一条自己的右栏分支，同一主会话内再按只会聚焦已有标签，不会重复开。
 
 ## 实现要点
 

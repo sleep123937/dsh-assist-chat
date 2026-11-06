@@ -12,6 +12,7 @@ All notable changes to this project are documented here. The format follows [Kee
 
 ### Fixed
 
+- **English UI**: the header button, right-dock tab title and guide card now follow the host locale instead of always falling back to Chinese (the real locale service exposes `bind`/`translate`, not `t`), and switching the language updates them live.
 - The left session list's "expand N more" counter no longer includes hidden side-chat branches that fell into the collapsed tail, so the number matches what the list can actually reveal; an exhausted counter is suppressed instead of promising rows that never appear.
 
 ## [0.1.1] — 2026-10-30

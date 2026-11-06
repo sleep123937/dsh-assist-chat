@@ -44,6 +44,8 @@ window.__ModuleLoader__.load({
     const CONV_SLOT = 'sidebar.assist.conversation';
     /** Session-header seat that carries the entry button. */
     const HEADER_SLOT = 'conversation.session.header.actions';
+    /** Keyed slot through which a tab type supplies its live chip title. */
+    const TAB_TITLE_SLOT = 'sidebar.right.pane.tab.title';
 
     /** Verbose tracing switch; warnings are always reported. */
     const DEBUG = false;
@@ -112,11 +114,34 @@ window.__ModuleLoader__.load({
 
     let rootCtx = null;
     let localeSvc = null;
+    let localeBound = null;
     let registryState = null;
 
     /**
-     * Translate one of our keys, preferring the registered Client locale service
-     * and falling back to the bundled tables so the plugin never shows a raw key.
+     * Resolve the Client locale service lazily; it may mount after this plugin.
+     * @returns the locale service, or null.
+     */
+    function localeService() {
+      if (localeSvc) return localeSvc;
+      try {
+        const service = getService('locale');
+        if (service && (typeof service.bind === 'function'
+          || typeof service.translate === 'function'
+          || typeof service.t === 'function')) {
+          localeSvc = service;
+        }
+      } catch (e) {}
+      return localeSvc;
+    }
+
+    /**
+     * Translate one of our keys through the live Client locale service.
+     *
+     * The shipped service exposes bind(ns) (a function that resolves the active
+     * locale on every call) and translate(ns, key, params); earlier builds exposed
+     * t(ns, key, params). bind wins because it follows a locale switch without the
+     * plugin being re-applied. The bundled tables remain the last resort so the
+     * UI never shows a raw key.
      * @param key - message key.
      * @param vars - interpolation values for name placeholders.
      * @returns the localized string.
@@ -124,7 +149,16 @@ window.__ModuleLoader__.load({
     function t(key, vars) {
       let value;
       try {
-        if (localeSvc && typeof localeSvc.t === 'function') value = localeSvc.t(NS, key, vars);
+        const service = localeService();
+        if (service) {
+          if (localeBound === null && typeof service.bind === 'function') {
+            const bound = service.bind(NS);
+            if (typeof bound === 'function') localeBound = bound;
+          }
+          if (typeof localeBound === 'function') value = localeBound(key, vars);
+          else if (typeof service.translate === 'function') value = service.translate(NS, key, vars);
+          else if (typeof service.t === 'function') value = service.t(NS, key, vars);
+        }
       } catch (e) {}
       if (value === undefined || value === null) value = ZH[key] || EN[key] || key;
       if (vars) {
@@ -133,6 +167,29 @@ window.__ModuleLoader__.load({
         });
       }
       return String(value);
+    }
+
+    /**
+     * The reactive translator a slot entry receives through its locale option;
+     * hosts (and early renders) without the injected seat fall back to the
+     * module-level translator.
+     * @param props - slot entry props.
+     * @returns a translate function.
+     */
+    function translatorOf(props) {
+      const injected = props && props.t;
+      return typeof injected === 'function' ? injected : t;
+    }
+
+    /**
+     * Slot-registration option opting an entry into the product's locale-bound
+     * translator. Undefined on hosts whose locale service predates bind(): the
+     * registration stays valid and the component falls back to the module one.
+     * @returns the locale namespace, or undefined.
+     */
+    function slotLocale() {
+      const service = localeService();
+      return service && typeof service.bind === 'function' ? NS : undefined;
     }
 
     /* ------------------------------------------------------------------ *
@@ -781,6 +838,7 @@ window.__ModuleLoader__.load({
 
     function AssistConversation(props) {
       const parts = props || {};
+      const tr = translatorOf(parts);
       const session = parts.useSession(function (value) { return value; });
       const conversation = parts.useConversation(function (value) { return value; });
       const summaryBlank = parts.useSessions
@@ -794,7 +852,7 @@ window.__ModuleLoader__.load({
       const hero = shellPhase === 'blank' && (session.openState === 'open' || summaryBlank === true);
       if (typeof parts.renderFactorySlot !== 'function') {
         return h('div', { className: 'dac-status' },
-          h('div', { className: 'dac-status-text' }, t('status.error')));
+          h('div', { className: 'dac-status-text' }, tr('status.error')));
       }
       return parts.renderFactorySlot('conversation.content', {
         variant: 'embedded',
@@ -862,6 +920,7 @@ window.__ModuleLoader__.load({
 
     function AssistTab(props) {
       const parts = props || {};
+      const tr = translatorOf(parts);
       // The dock's layout is per-Session, so the seat knows which main
       // conversation it belongs to through its own tab navigation params.
       // The guide-page entry has no params, so fall back to whatever the main
@@ -881,14 +940,14 @@ window.__ModuleLoader__.load({
         const failed = state.phase === 'error';
         const detail = failed && state.error ? String((state.error && state.error.message) || state.error) : '';
         return h('div', { className: 'dac-status' },
-          h('div', { className: 'dac-status-text' }, failed ? t('status.error') : t('status.creating')),
+          h('div', { className: 'dac-status-text' }, failed ? tr('status.error') : tr('status.creating')),
           detail ? h('div', { className: 'dac-status-detail' }, detail) : null,
-          failed ? h('button', { type: 'button', className: 'dac-btn', onClick: retry }, t('retry')) : null
+          failed ? h('button', { type: 'button', className: 'dac-btn', onClick: retry }, tr('retry')) : null
         );
       }
       if (typeof parts.renderSlot !== 'function' || !parts.SessionProvider) {
         return h('div', { className: 'dac-status' },
-          h('div', { className: 'dac-status-text' }, t('status.error')));
+          h('div', { className: 'dac-status-text' }, tr('status.error')));
       }
       return h('div', { className: 'dac-root', 'data-assist-chat': '' },
         h(parts.SessionProvider, { session: state.reference }, parts.renderSlot(CONV_SLOT, {}))
@@ -905,19 +964,34 @@ window.__ModuleLoader__.load({
         h('path', { d: 'M12 8v6M9 11h6' }));
     }
 
-    function AssistHeaderButton() {
+    /**
+     * Live tab-chip title. The title a tab is opened with is captured once, so a
+     * locale switch would leave an already-open chip reading the old language.
+     * This entry registers into the product's keyed title slot instead; the slot
+     * outlet re-renders on a locale revision and its injected translator is
+     * re-derived, keeping the chip current without reopening the tab.
+     * @param props - slot props carrying the locale-bound translator.
+     * @returns the localized chip label.
+     */
+    function AssistTabTitle(props) {
+      const tr = translatorOf(props || {});
+      return h(Fragment, null, tr('tab.title'));
+    }
+
+    function AssistHeaderButton(props) {
+      const tr = translatorOf(props);
       return h('button', {
         type: 'button',
         className: 'dac-header-btn',
-        title: t('header.buttonTitle'),
-        'aria-label': t('header.buttonTitle'),
+        title: tr('header.buttonTitle'),
+        'aria-label': tr('header.buttonTitle'),
         onClick: function (event) {
           try {
             if (event) { event.preventDefault(); event.stopPropagation(); }
           } catch (e) {}
           openSideChat();
         }
-      }, h(AssistGlyph, null), h('span', { className: 'dac-header-btn-text' }, t('header.button')));
+      }, h(AssistGlyph, null), h('span', { className: 'dac-header-btn-text' }, tr('header.button')));
     }
 
     /* ------------------------------------------------------------------ *
@@ -929,7 +1003,10 @@ window.__ModuleLoader__.load({
      *
      * sidebarRight.openTab records a page at the address this package composes
      * for the kind; because the tab type is single-instance, the product reveals
-     * and focuses the existing tab instead of minting a second one. The parent id
+     * and focuses the existing tab instead of minting a second one. Single
+     * instance is scoped to one main conversation: the right dock keeps its
+     * layout per Session, so session A's side-chat tab never appears while B is
+     * on screen and pressing the shortcut in B opens B's own tab. The parent id
      * rides the tab navigation params, so the seat always renders the branch of
      * the conversation that owns it.
      * @param options - requireMain refuses to open without a main Session.
@@ -1221,6 +1298,7 @@ window.__ModuleLoader__.load({
             return ctx.slots.register({
               name: TAB_SLOT,
               key: IMPL_ID,
+              locale: slotLocale(),
               children: { 'sidebar.assist.conversation': { kind: 'single', scope: 'session' } }
             }, AssistTab);
           });
@@ -1228,7 +1306,17 @@ window.__ModuleLoader__.load({
 
         ctx.effect(function () {
           return ctx.slots.inject(CONV_SLOT, function () {
-            return ctx.slots.register({ name: CONV_SLOT }, AssistConversation);
+            return ctx.slots.register({ name: CONV_SLOT, locale: slotLocale() }, AssistConversation);
+          });
+        });
+
+        ctx.effect(function () {
+          return ctx.slots.inject(TAB_TITLE_SLOT, function () {
+            return ctx.slots.register({
+              name: TAB_TITLE_SLOT,
+              key: IMPL_ID,
+              locale: slotLocale()
+            }, AssistTabTitle);
           });
         });
 
@@ -1237,7 +1325,8 @@ window.__ModuleLoader__.load({
             return ctx.slots.register({
               name: HEADER_SLOT,
               id: 'assist-chat-open',
-              order: 60
+              order: 60,
+              locale: slotLocale()
             }, AssistHeaderButton);
           });
         });
